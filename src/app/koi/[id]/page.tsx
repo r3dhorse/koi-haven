@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaGallery } from "@/components/MediaGallery";
-import { getKoi, getSettings, listKoi } from "@/lib/store";
+import { getKoi, getSettings } from "@/lib/store";
 import {
   formatPrice,
   inquiryMessage,
@@ -9,10 +9,7 @@ import {
   whatsappLink,
 } from "@/lib/format";
 
-export async function generateStaticParams() {
-  const all = await listKoi();
-  return all.map((k) => ({ id: k.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

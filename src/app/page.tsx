@@ -3,6 +3,8 @@ import { KoiCard } from "@/components/KoiCard";
 import { getSettings, listKoi } from "@/lib/store";
 import { whatsappLink } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const settings = await getSettings();
   const featured = (await listKoi({ featured: true })).slice(0, 6);
