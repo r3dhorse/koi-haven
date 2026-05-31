@@ -24,18 +24,17 @@ export default async function KoiListingsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const status = (typeof params.status === "string" ? params.status : "all") as
-    | KoiStatus
-    | "all";
-  const variety =
-    typeof params.variety === "string" ? params.variety.toLowerCase() : "";
+  const rawStatus = typeof params.status === "string" ? params.status : "";
+  const status = (rawStatus || "all") as KoiStatus | "all";
+  const variety = typeof params.variety === "string" ? params.variety : "";
 
   const settings = await getSettings();
   const all = await listKoi();
 
+  const varietyKey = variety.toLowerCase();
   const filtered = all.filter((k) => {
     if (status !== "all" && k.status !== status) return false;
-    if (variety && !k.variety.toLowerCase().includes(variety)) return false;
+    if (varietyKey && k.variety.toLowerCase() !== varietyKey) return false;
     return true;
   });
 
@@ -85,11 +84,9 @@ export default async function KoiListingsPage({
             className="flex flex-wrap items-center gap-2"
             action="/koi"
           >
-            <input
-              type="hidden"
-              name="status"
-              value={status === "all" ? "" : status}
-            />
+            {status !== "all" && (
+              <input type="hidden" name="status" value={status} />
+            )}
             <label
               htmlFor="variety"
               className="text-xs uppercase tracking-widest text-koi-600"
