@@ -728,9 +728,9 @@ function HeroImagesEditor({
   const slots = [0, 1, 2, 3];
   const labels = [
     "1. Big card (top-left, ~4:3)",
-    "2. Tall card (top-right)",
-    "3. Tall card (middle-right)",
-    "4. Wide card (bottom)",
+    "2. Tall card (top-right, ~2:3)",
+    "3. Tall card (middle-right, ~2:3)",
+    "4. Wide card (bottom, ~2:1)",
   ];
   const filled: string[] = [
     images[0] ?? "",
