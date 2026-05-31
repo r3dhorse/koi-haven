@@ -1,9 +1,41 @@
+import Image from "next/image";
 import Link from "next/link";
 import { KoiCard } from "@/components/KoiCard";
 import { getSettings, listKoi } from "@/lib/store";
 import { formatWhatsapp } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+function HeroCell({
+  src,
+  alt,
+  className,
+  sizes,
+  priority,
+}: {
+  src: string | undefined;
+  alt: string;
+  className: string;
+  sizes: string;
+  priority?: boolean;
+}) {
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {src ? (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          priority={priority}
+          className="object-cover"
+        />
+      ) : (
+        <div className="h-full w-full bg-koi-100" />
+      )}
+    </div>
+  );
+}
+
+export const revalidate = 300;
 
 export default async function HomePage() {
   const settings = await getSettings();
@@ -61,40 +93,32 @@ function Hero({
 
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-white/50 blur-2xl" />
-          <div className="relative grid grid-cols-6 grid-rows-6 gap-3">
-            {/* Big card */}
-            <div className="col-span-4 row-span-4 overflow-hidden rounded-[2rem] shadow-soft">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.heroImages?.[0] ?? ""}
-                alt="Hero koi 1"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="col-span-2 row-span-3 overflow-hidden rounded-[1.5rem] shadow-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.heroImages?.[1] ?? ""}
-                alt="Hero koi 2"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="col-span-2 row-span-3 overflow-hidden rounded-[1.5rem] shadow-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.heroImages?.[2] ?? ""}
-                alt="Hero koi 3"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="col-span-4 row-span-2 overflow-hidden rounded-[1.5rem] shadow-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.heroImages?.[3] ?? ""}
-                alt="Hero koi 4"
-                className="h-full w-full object-cover"
-              />
-            </div>
+          <div className="relative grid aspect-square grid-cols-6 grid-rows-6 gap-3">
+            <HeroCell
+              src={settings.heroImages?.[0]}
+              alt="Hero koi 1"
+              priority
+              className="col-span-4 row-span-4 rounded-[2rem] shadow-soft"
+              sizes="(max-width: 1024px) 60vw, 32vw"
+            />
+            <HeroCell
+              src={settings.heroImages?.[1]}
+              alt="Hero koi 2"
+              className="col-span-2 row-span-3 rounded-[1.5rem] shadow-card"
+              sizes="(max-width: 1024px) 30vw, 16vw"
+            />
+            <HeroCell
+              src={settings.heroImages?.[2]}
+              alt="Hero koi 3"
+              className="col-span-2 row-span-3 rounded-[1.5rem] shadow-card"
+              sizes="(max-width: 1024px) 30vw, 16vw"
+            />
+            <HeroCell
+              src={settings.heroImages?.[3]}
+              alt="Hero koi 4"
+              className="col-span-4 row-span-2 rounded-[1.5rem] shadow-card"
+              sizes="(max-width: 1024px) 60vw, 32vw"
+            />
           </div>
           <div className="pointer-events-none absolute -bottom-6 -right-2 hidden animate-float rounded-2xl bg-white/90 p-3 shadow-card lg:block">
             <div className="text-[10px] uppercase tracking-widest text-koi-600">
@@ -170,7 +194,7 @@ function FeaturedSection({
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {koi.map((k) => (
-            <KoiCard key={k.id} koi={k} settings={settings} />
+            <KoiCard key={k.id} koi={k} />
           ))}
         </div>
 
@@ -197,12 +221,15 @@ function AboutSection({
         {story.imageUrl && (
           <div className="relative">
             <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-water-gradient" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={story.imageUrl}
-              alt={story.title}
-              className="rounded-[2rem] object-cover shadow-soft"
-            />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-soft">
+              <Image
+                src={story.imageUrl}
+                alt={story.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
           </div>
         )}
         <div className={story.imageUrl ? "" : "lg:col-span-2"}>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { KoiMedia } from "@/lib/types";
 
@@ -17,11 +18,13 @@ export function MediaGallery({ items }: { items: KoiMedia[] }) {
     <div className="space-y-3">
       <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-koi-50">
         {current.kind === "image" ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={current.url}
             alt={current.caption ?? "Koi photo"}
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
+            className="object-cover"
           />
         ) : (
           <iframe
@@ -52,11 +55,12 @@ export function MediaGallery({ items }: { items: KoiMedia[] }) {
               aria-label={`Show media ${i + 1}`}
             >
               {m.kind === "image" ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={m.url}
                   alt={m.caption ?? `Thumbnail ${i + 1}`}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="112px"
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-ink text-xs text-white">

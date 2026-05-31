@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { KoiCard } from "@/components/KoiCard";
-import { getSettings, listKoi } from "@/lib/store";
+import { listKoi } from "@/lib/store";
 import type { KoiStatus } from "@/lib/types";
 
 export const metadata = {
   title: "Browse koi",
   description: "All available, reserved, and sold koi at our farm.",
 };
+
+export const revalidate = 300;
 
 const STATUS_OPTIONS: Array<{
   value: KoiStatus | "all";
@@ -28,7 +30,6 @@ export default async function KoiListingsPage({
   const status = (rawStatus || "all") as KoiStatus | "all";
   const variety = typeof params.variety === "string" ? params.variety : "";
 
-  const settings = await getSettings();
   const all = await listKoi();
 
   const varietyKey = variety.toLowerCase();
@@ -135,7 +136,7 @@ export default async function KoiListingsPage({
               </p>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((k) => (
-                  <KoiCard key={k.id} koi={k} settings={settings} />
+                  <KoiCard key={k.id} koi={k} />
                 ))}
               </div>
             </>

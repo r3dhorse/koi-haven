@@ -1,10 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaGallery } from "@/components/MediaGallery";
 import { getKoi, getSettings } from "@/lib/store";
 import { formatPrice, formatWhatsapp, statusBadge } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -131,12 +132,15 @@ export default async function KoiDetailPage({
                   className="overflow-hidden rounded-2xl bg-white shadow-card"
                 >
                   {m.kind === "image" ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={m.url}
-                      alt={m.caption ?? "Proof of sale"}
-                      className="aspect-[4/3] w-full object-cover"
-                    />
+                    <div className="relative aspect-[4/3] w-full">
+                      <Image
+                        src={m.url}
+                        alt={m.caption ?? "Proof of sale"}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <iframe
                       src={m.url}

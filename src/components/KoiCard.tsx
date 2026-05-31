@@ -1,14 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
-import type { KoiListing, SiteSettings } from "@/lib/types";
+import type { KoiListing } from "@/lib/types";
 import { formatPrice, statusBadge } from "@/lib/format";
 
-export function KoiCard({
-  koi,
-  settings: _settings,
-}: {
-  koi: KoiListing;
-  settings: SiteSettings;
-}) {
+export function KoiCard({ koi }: { koi: KoiListing }) {
   const cover = koi.media[0]?.url ?? "";
   const badge = statusBadge(koi.status);
 
@@ -17,11 +12,12 @@ export function KoiCard({
       <Link href={`/koi/${koi.id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-koi-50">
           {cover ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={cover}
               alt={koi.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-koi-300">

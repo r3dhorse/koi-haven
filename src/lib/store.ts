@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { cache } from "react";
 import type {
   KoiData,
   KoiListing,
@@ -368,7 +369,9 @@ export async function writeData(data: KoiData): Promise<void> {
   memoryCache = { data, mtime: Date.now() };
 }
 
-export async function getSettings(): Promise<SiteSettings> {
+export const getSettings = cache(_getSettings);
+
+async function _getSettings(): Promise<SiteSettings> {
   const data = await readData();
   // Back-fill new fields for older blob payloads.
   if (!data.settings.story) {
