@@ -65,11 +65,6 @@ export function AdminLogin() {
               {pending ? "Signing in…" : "Sign in"}
             </button>
           </form>
-          <p className="mt-5 text-xs text-koi-700/70">
-            Password is the <code className="font-mono">ADMIN_PASSWORD</code>{" "}
-            environment variable (default{" "}
-            <code className="font-mono">changeme</code> in local dev).
-          </p>
         </div>
       </div>
     </section>

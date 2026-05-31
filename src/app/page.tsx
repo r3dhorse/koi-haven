@@ -29,7 +29,6 @@ function Hero({
 }: {
   settings: Awaited<ReturnType<typeof getSettings>>;
 }) {
-  const wa = formatWhatsapp(settings);
   return (
     <section className="relative overflow-hidden water-surface">
       <div className="absolute inset-0 -z-0">
@@ -51,21 +50,13 @@ function Hero({
             your pond.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link href="/koi" className="btn-primary">
+            <Link
+              href="/koi"
+              className="btn-primary px-8 py-4 text-base sm:text-lg"
+            >
               Browse available koi
             </Link>
-            <a href={`tel:${settings.phone}`} className="btn-outline">
-              📞 Call {settings.phone}
-            </a>
           </div>
-          {wa && (
-            <p className="mt-3 text-sm text-koi-800/80">
-              Or message us on{" "}
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-700 ring-1 ring-emerald-200">
-                WhatsApp {wa}
-              </span>
-            </p>
-          )}
         </div>
 
         <div className="relative">
