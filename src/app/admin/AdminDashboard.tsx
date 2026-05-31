@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   KoiListing,
@@ -59,7 +59,7 @@ export function AdminDashboard({
       sex: "unknown",
       breeder: "",
       price: 0,
-      currency: "USD",
+      currency: "PHP",
       status: "available",
       description: "",
       media: [],
@@ -144,6 +144,8 @@ export function AdminDashboard({
   );
 }
 
+const PAGE_SIZE = 10;
+
 function KoiTable({
   items,
   onEdit,
@@ -153,6 +155,32 @@ function KoiTable({
   onEdit: (k: KoiListing) => void;
   onDelete: (id: string) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [variety, setVariety] = useState("");
+  const [page, setPage] = useState(0);
+
+  const varieties = useMemo(
+    () => Array.from(new Set(items.map((k) => k.variety))).sort(),
+    [items],
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((k) => {
+      if (variety && k.variety !== variety) return false;
+      if (q && !k.code.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [items, query, variety]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  useEffect(() => {
+    setPage(0);
+  }, [query, variety]);
+  const safePage = Math.min(page, pageCount - 1);
+  const start = safePage * PAGE_SIZE;
+  const visible = filtered.slice(start, start + PAGE_SIZE);
+
   if (items.length === 0) {
     return (
       <div className="mt-6 card p-8 text-center text-koi-700">
@@ -160,62 +188,156 @@ function KoiTable({
       </div>
     );
   }
+
   return (
-    <div className="mt-6 overflow-x-auto card">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-koi-50 text-xs uppercase tracking-widest text-koi-700">
-          <tr>
-            <th className="px-4 py-3">Code</th>
-            <th className="px-4 py-3">Name</th>
-            <th className="px-4 py-3">Variety</th>
-            <th className="px-4 py-3">Size</th>
-            <th className="px-4 py-3">Price</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Featured</th>
-            <th className="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-koi-100">
-          {items.map((k) => {
-            const badge = statusBadge(k.status);
-            return (
-              <tr key={k.id} className="hover:bg-koi-50/40">
-                <td className="px-4 py-3 font-mono text-xs text-koi-700">
-                  {k.code}
-                </td>
-                <td className="px-4 py-3 font-medium text-ink">{k.name}</td>
-                <td className="px-4 py-3 text-koi-800">{k.variety}</td>
-                <td className="px-4 py-3 text-koi-800">{k.size}</td>
-                <td className="px-4 py-3 text-koi-800">
-                  {formatPrice(k.price, k.currency)}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`pill ${badge.classes}`}>{badge.label}</span>
-                </td>
-                <td className="px-4 py-3 text-koi-800">
-                  {k.featured ? "★" : "—"}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(k)}
-                    className="btn-outline px-3 py-1 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(k.id)}
-                    className="ml-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="mt-6">
+      <div className="card mb-4 flex flex-wrap items-end gap-3 p-4">
+        <div className="flex-1 min-w-[200px]">
+          <label
+            htmlFor="koi-code-search"
+            className="text-[10px] uppercase tracking-widest text-koi-600"
+          >
+            Search code
+          </label>
+          <input
+            id="koi-code-search"
+            className="input mt-1"
+            value={query}
+            placeholder="e.g. KH-001"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="min-w-[200px]">
+          <label
+            htmlFor="koi-variety-filter"
+            className="text-[10px] uppercase tracking-widest text-koi-600"
+          >
+            Variety
+          </label>
+          <select
+            id="koi-variety-filter"
+            className="input mt-1"
+            value={variety}
+            onChange={(e) => setVariety(e.target.value)}
+          >
+            <option value="">All varieties</option>
+            {varieties.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </div>
+        {(query || variety) && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setVariety("");
+            }}
+            className="btn-outline px-3 py-2 text-xs"
+          >
+            Clear filters
+          </button>
+        )}
+        <div className="ml-auto text-xs text-koi-700/80">
+          Showing {visible.length} of {filtered.length}
+          {filtered.length !== items.length && ` (${items.length} total)`}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="card p-8 text-center text-koi-700">
+          No koi match those filters.
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto card">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-koi-50 text-xs uppercase tracking-widest text-koi-700">
+                <tr>
+                  <th className="px-4 py-3">Code</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Variety</th>
+                  <th className="px-4 py-3">Size</th>
+                  <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Featured</th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-koi-100">
+                {visible.map((k) => {
+                  const badge = statusBadge(k.status);
+                  return (
+                    <tr key={k.id} className="hover:bg-koi-50/40">
+                      <td className="px-4 py-3 font-mono text-xs text-koi-700">
+                        {k.code}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-ink">
+                        {k.name}
+                      </td>
+                      <td className="px-4 py-3 text-koi-800">{k.variety}</td>
+                      <td className="px-4 py-3 text-koi-800">{k.size}</td>
+                      <td className="px-4 py-3 text-koi-800">
+                        {formatPrice(k.price, k.currency)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`pill ${badge.classes}`}>
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-koi-800">
+                        {k.featured ? "★" : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(k)}
+                          className="btn-outline px-3 py-1 text-xs"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(k.id)}
+                          className="ml-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {pageCount > 1 && (
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={safePage === 0}
+                className="btn-outline px-3 py-1 text-xs disabled:opacity-40"
+              >
+                ← Prev
+              </button>
+              <span className="text-xs text-koi-700/80">
+                Page {safePage + 1} of {pageCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                disabled={safePage >= pageCount - 1}
+                className="btn-outline px-3 py-1 text-xs disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -365,19 +487,6 @@ function SettingsForm({
           Save settings
         </button>
       </div>
-      <style jsx>{`
-        :global(.input) {
-          width: 100%;
-          border-radius: 0.75rem;
-          border: 1px solid #bfe0f5;
-          background: #fff;
-          padding: 0.5rem 0.875rem;
-        }
-        :global(.input:focus) {
-          outline: none;
-          border-color: #1e8dc6;
-        }
-      `}</style>
     </form>
   );
 }

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     sex: body.sex,
     breeder: body.breeder?.trim(),
     price: Number(body.price ?? 0),
-    currency: body.currency ?? "USD",
+    currency: body.currency ?? "PHP",
     status: body.status ?? "available",
     description: body.description ?? "",
     media: body.media ?? [],
