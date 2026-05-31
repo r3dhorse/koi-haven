@@ -295,6 +295,13 @@ function SettingsForm({
       </div>
 
       <div className="md:col-span-2">
+        <HeroImagesEditor
+          images={form.heroImages ?? ["", "", "", ""]}
+          onChange={(heroImages) => setForm({ ...form, heroImages })}
+        />
+      </div>
+
+      <div className="md:col-span-2">
         <StoryEditor
           story={
             form.story ?? {
@@ -727,6 +734,134 @@ function MediaManager({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function HeroImagesEditor({
+  images,
+  onChange,
+}: {
+  images: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const slots = [0, 1, 2, 3];
+  const labels = [
+    "1. Big card (top-left, ~4:3)",
+    "2. Tall card (top-right)",
+    "3. Tall card (middle-right)",
+    "4. Wide card (bottom)",
+  ];
+  const filled: string[] = [
+    images[0] ?? "",
+    images[1] ?? "",
+    images[2] ?? "",
+    images[3] ?? "",
+  ];
+
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState("");
+
+  function setAt(idx: number, value: string) {
+    const next = [...filled];
+    next[idx] = value;
+    onChange(next);
+  }
+
+  async function uploadAt(
+    idx: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    e.currentTarget.value = "";
+    if (!file) return;
+    setUploadingIdx(idx);
+    setUploadError("");
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    setUploadingIdx(null);
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setUploadError(j.error ?? "Upload failed.");
+      return;
+    }
+    const j = await res.json();
+    setAt(idx, (j.media as KoiMedia).url);
+  }
+
+  return (
+    <div className="rounded-2xl border border-koi-100 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-widest text-koi-700">
+          Hero collage (4 images)
+        </span>
+        <span className="text-[10px] text-koi-600">
+          Shown on the home page hero
+        </span>
+      </div>
+      {uploadError && (
+        <div className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          {uploadError}
+        </div>
+      )}
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {slots.map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl bg-koi-50/40 p-4 ring-1 ring-koi-100"
+          >
+            <div className="text-[11px] font-semibold text-koi-700">
+              {labels[i]}
+            </div>
+            <div className="mt-2 flex gap-3">
+              <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-koi-100">
+                {filled[i] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={filled[i]}
+                    alt={labels[i]}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[10px] text-koi-400">
+                    No image
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <input
+                  className="input"
+                  value={filled[i]}
+                  placeholder="https://… or upload below"
+                  onChange={(e) => setAt(i, e.target.value)}
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <label className="btn-outline cursor-pointer px-3 py-1 text-xs">
+                    {uploadingIdx === i ? "Uploading…" : "Upload to Drive"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => uploadAt(i, e)}
+                      disabled={uploadingIdx !== null}
+                    />
+                  </label>
+                  {filled[i] && (
+                    <button
+                      type="button"
+                      onClick={() => setAt(i, "")}
+                      className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -89,32 +89,32 @@ function Hero({
             <div className="col-span-4 row-span-4 overflow-hidden rounded-[2rem] shadow-soft">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1400&q=80"
-                alt="Koi top view"
+                src={settings.heroImages?.[0] ?? ""}
+                alt="Hero koi 1"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="col-span-2 row-span-3 overflow-hidden rounded-[1.5rem] shadow-card">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=900&q=80"
-                alt="Showa koi"
+                src={settings.heroImages?.[1] ?? ""}
+                alt="Hero koi 2"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="col-span-2 row-span-3 overflow-hidden rounded-[1.5rem] shadow-card">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1545816250-e12bedba42ba?auto=format&fit=crop&w=900&q=80"
-                alt="Sanke koi"
+                src={settings.heroImages?.[2] ?? ""}
+                alt="Hero koi 3"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="col-span-4 row-span-2 overflow-hidden rounded-[1.5rem] shadow-card">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1400&q=80"
-                alt="Koi school"
+                src={settings.heroImages?.[3] ?? ""}
+                alt="Hero koi 4"
                 className="h-full w-full object-cover"
               />
             </div>

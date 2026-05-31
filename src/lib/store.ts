@@ -14,6 +14,13 @@ const DATA_FILE = path.join(DATA_DIR, "koi.json");
 // Stable pathname inside the linked Vercel Blob store.
 const BLOB_PATH = "koi-haven/data.json";
 
+export const defaultHeroImages: string[] = [
+  "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1545816250-e12bedba42ba?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1400&q=80",
+];
+
 export const defaultStory: SiteStory = {
   eyebrow: "Our story",
   title: "Twelve years of hand-picking koi worth keeping.",
@@ -38,6 +45,7 @@ const defaultSettings: SiteSettings = {
   instagram: "koihaven",
   facebook: "koihaven",
   story: defaultStory,
+  heroImages: defaultHeroImages,
 };
 
 const seedKoi: KoiListing[] = [
@@ -327,9 +335,15 @@ export async function writeData(data: KoiData): Promise<void> {
 
 export async function getSettings(): Promise<SiteSettings> {
   const data = await readData();
-  // Back-fill story for older blob payloads that don't have it yet.
+  // Back-fill new fields for older blob payloads.
   if (!data.settings.story) {
     data.settings = { ...data.settings, story: defaultStory };
+  }
+  if (
+    !Array.isArray(data.settings.heroImages) ||
+    data.settings.heroImages.length === 0
+  ) {
+    data.settings = { ...data.settings, heroImages: defaultHeroImages };
   }
   return data.settings;
 }

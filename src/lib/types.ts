@@ -49,6 +49,8 @@ export interface SiteSettings {
   instagram?: string;
   facebook?: string;
   story?: SiteStory;
+  /** Four image URLs shown in the home hero collage. */
+  heroImages?: string[];
 }
 
 export interface KoiData {
