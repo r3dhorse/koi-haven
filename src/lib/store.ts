@@ -6,8 +6,11 @@ import type {
   KoiStatus,
   SiteProcess,
   SiteSettings,
+  SiteStat,
   SiteStory,
 } from "./types";
+
+export const MAX_STATS = 4;
 
 export const MAX_PROCESS_STEPS = 4;
 
@@ -44,6 +47,13 @@ export const defaultProcess: SiteProcess = {
   ],
 };
 
+export const defaultStats: SiteStat[] = [
+  { label: "Bloodlines", value: "Sakai · Dainichi · Momotaro · Marusei" },
+  { label: "Varieties", value: "Gosanke · Utsuri · Ogon · Ginrin" },
+  { label: "Sizes", value: "Tosai · Nisai · Sansai+" },
+  { label: "Shipping", value: "Insured nationwide" },
+];
+
 export const defaultStory: SiteStory = {
   eyebrow: "Our story",
   title: "Twelve years of hand-picking koi worth keeping.",
@@ -69,6 +79,7 @@ const defaultSettings: SiteSettings = {
   facebook: "koihaven",
   story: defaultStory,
   heroImages: defaultHeroImages,
+  stats: defaultStats,
   process: defaultProcess,
 };
 
@@ -368,6 +379,17 @@ export async function getSettings(): Promise<SiteSettings> {
     data.settings.heroImages.length === 0
   ) {
     data.settings = { ...data.settings, heroImages: defaultHeroImages };
+  }
+  if (
+    !Array.isArray(data.settings.stats) ||
+    data.settings.stats.length === 0
+  ) {
+    data.settings = { ...data.settings, stats: defaultStats };
+  } else {
+    data.settings = {
+      ...data.settings,
+      stats: data.settings.stats.slice(0, MAX_STATS),
+    };
   }
   if (!data.settings.process) {
     data.settings = { ...data.settings, process: defaultProcess };

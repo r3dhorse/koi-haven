@@ -15,7 +15,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero settings={settings} />
-      <Stats />
+      <Stats settings={settings} />
       <FeaturedSection koi={fallback} settings={settings} />
       <AboutSection settings={settings} />
       <ProcessSection settings={settings} />
@@ -66,20 +66,6 @@ function Hero({
               </span>
             </p>
           )}
-          <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 text-sm">
-            <div>
-              <dt className="text-koi-700/70">Hand-selected</dt>
-              <dd className="mt-1 font-display text-2xl text-ink">120+</dd>
-            </div>
-            <div>
-              <dt className="text-koi-700/70">Breeders</dt>
-              <dd className="mt-1 font-display text-2xl text-ink">14</dd>
-            </div>
-            <div>
-              <dt className="text-koi-700/70">Years</dt>
-              <dd className="mt-1 font-display text-2xl text-ink">12</dd>
-            </div>
-          </dl>
         </div>
 
         <div className="relative">
@@ -134,19 +120,21 @@ function Hero({
   );
 }
 
-function Stats() {
-  const stats = [
-    { label: "Bloodlines", value: "Sakai · Dainichi · Momotaro · Marusei" },
-    { label: "Varieties", value: "Gosanke · Utsuri · Ogon · Ginrin" },
-    { label: "Sizes", value: "Tosai · Nisai · Sansai+" },
-    { label: "Shipping", value: "Insured nationwide" },
-  ];
+function Stats({
+  settings,
+}: {
+  settings: Awaited<ReturnType<typeof getSettings>>;
+}) {
+  const stats = (settings.stats ?? []).filter(
+    (s) => s.label.trim() || s.value.trim(),
+  );
+  if (stats.length === 0) return null;
   return (
     <section className="bg-white">
       <div className="container-page grid gap-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
+        {stats.map((s, i) => (
           <div
-            key={s.label}
+            key={`${s.label}-${i}`}
             className="rounded-2xl bg-koi-50/60 p-5 ring-1 ring-koi-100"
           >
             <div className="text-[10px] uppercase tracking-widest text-koi-600">

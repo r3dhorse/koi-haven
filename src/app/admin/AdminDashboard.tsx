@@ -9,6 +9,7 @@ import type {
   ProcessStep,
   SiteProcess,
   SiteSettings,
+  SiteStat,
   SiteStory,
 } from "@/lib/types";
 import { formatPrice, normalizeImageUrl, statusBadge } from "@/lib/format";
@@ -302,6 +303,13 @@ function SettingsForm({
         <HeroImagesEditor
           images={form.heroImages ?? ["", "", "", ""]}
           onChange={(heroImages) => setForm({ ...form, heroImages })}
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <StatsEditor
+          stats={form.stats ?? []}
+          onChange={(stats) => setForm({ ...form, stats })}
         />
       </div>
 
@@ -798,6 +806,65 @@ function HeroImagesEditor({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatsEditor({
+  stats,
+  onChange,
+}: {
+  stats: SiteStat[];
+  onChange: (next: SiteStat[]) => void;
+}) {
+  const slots = [0, 1, 2, 3];
+  const filled: SiteStat[] = slots.map((i) => stats[i] ?? { label: "", value: "" });
+
+  function setAt(idx: number, patch: Partial<SiteStat>) {
+    const next = filled.map((s, i) => (i === idx ? { ...s, ...patch } : s));
+    onChange(next);
+  }
+
+  return (
+    <div className="rounded-2xl border border-koi-100 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-widest text-koi-700">
+          Hero stat cards (4)
+        </span>
+        <span className="text-[10px] text-koi-600">
+          Shown under the hero — e.g. Bloodlines, Varieties, Sizes, Shipping
+        </span>
+      </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {slots.map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl bg-koi-50/40 p-4 ring-1 ring-koi-100"
+          >
+            <div className="text-[11px] font-semibold text-koi-700">
+              Card {i + 1}
+            </div>
+            <div className="mt-2 grid gap-2">
+              <Field label="Label">
+                <input
+                  className="input"
+                  value={filled[i].label}
+                  placeholder="Bloodlines"
+                  onChange={(e) => setAt(i, { label: e.target.value })}
+                />
+              </Field>
+              <Field label="Value">
+                <input
+                  className="input"
+                  value={filled[i].value}
+                  placeholder="Sakai · Dainichi · Momotaro · Marusei"
+                  onChange={(e) => setAt(i, { value: e.target.value })}
+                />
+              </Field>
             </div>
           </div>
         ))}

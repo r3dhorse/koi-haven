@@ -52,6 +52,11 @@ export interface SiteProcess {
   steps: ProcessStep[];
 }
 
+export interface SiteStat {
+  label: string;
+  value: string;
+}
+
 export interface SiteSettings {
   businessName: string;
   tagline: string;
@@ -64,6 +69,8 @@ export interface SiteSettings {
   story?: SiteStory;
   /** Four image URLs shown in the home hero collage. */
   heroImages?: string[];
+  /** Four label/value cards shown under the hero (Bloodlines, Varieties, etc). */
+  stats?: SiteStat[];
   process?: SiteProcess;
 }
 
