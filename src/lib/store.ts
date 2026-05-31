@@ -5,6 +5,7 @@ import type {
   KoiListing,
   KoiStatus,
   SiteSettings,
+  SiteStory,
 } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -12,6 +13,20 @@ const DATA_FILE = path.join(DATA_DIR, "koi.json");
 
 // Stable pathname inside the linked Vercel Blob store.
 const BLOB_PATH = "koi-haven/data.json";
+
+export const defaultStory: SiteStory = {
+  eyebrow: "Our story",
+  title: "Twelve years of hand-picking koi worth keeping.",
+  body: "We began in a backyard pond. Today we travel to Japan twice a year, work directly with breeders, and only bring back koi we'd be proud to keep ourselves.",
+  bullets: [
+    "Direct relationships with Niigata and Hiroshima breeders",
+    "21-day quarantine, salt + heat protocol on every koi",
+    "Detailed top + side photography before sale",
+    "Honest, no-pressure guidance for keepers at any level",
+  ],
+  imageUrl:
+    "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?auto=format&fit=crop&w=1400&q=80",
+};
 
 const defaultSettings: SiteSettings = {
   businessName: "Koi Haven",
@@ -22,6 +37,7 @@ const defaultSettings: SiteSettings = {
   location: "Pacific Northwest, USA",
   instagram: "koihaven",
   facebook: "koihaven",
+  story: defaultStory,
 };
 
 const seedKoi: KoiListing[] = [
@@ -311,6 +327,10 @@ export async function writeData(data: KoiData): Promise<void> {
 
 export async function getSettings(): Promise<SiteSettings> {
   const data = await readData();
+  // Back-fill story for older blob payloads that don't have it yet.
+  if (!data.settings.story) {
+    data.settings = { ...data.settings, story: defaultStory };
+  }
   return data.settings;
 }
 

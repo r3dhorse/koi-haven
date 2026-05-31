@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { KoiListing, KoiMedia, KoiStatus, SiteSettings } from "@/lib/types";
+import type {
+  KoiListing,
+  KoiMedia,
+  KoiStatus,
+  SiteSettings,
+  SiteStory,
+} from "@/lib/types";
 import { formatPrice, statusBadge } from "@/lib/format";
 
 export function AdminDashboard({
@@ -286,6 +292,21 @@ function SettingsForm({
       <div className="md:col-span-2 rounded-2xl bg-koi-50/70 px-4 py-3 text-xs text-koi-800/80 ring-1 ring-koi-100">
         Admin password is set with the <code className="font-mono">ADMIN_PASSWORD</code> environment variable
         in Vercel project settings. Update it there and redeploy to rotate it.
+      </div>
+
+      <div className="md:col-span-2">
+        <StoryEditor
+          story={
+            form.story ?? {
+              eyebrow: "Our story",
+              title: "",
+              body: "",
+              bullets: [],
+              imageUrl: "",
+            }
+          }
+          onChange={(story) => setForm({ ...form, story })}
+        />
       </div>
       <div className="flex items-end justify-end gap-3 md:col-span-2">
         {status === "saved" && (
@@ -705,6 +726,104 @@ function MediaManager({
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+function StoryEditor({
+  story,
+  onChange,
+}: {
+  story: SiteStory;
+  onChange: (s: SiteStory) => void;
+}) {
+  const bulletsText = story.bullets.join("\n");
+
+  function setBullets(raw: string) {
+    const bullets = raw
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    onChange({ ...story, bullets });
+  }
+
+  return (
+    <div className="rounded-2xl border border-koi-100 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-widest text-koi-700">
+          Our Story section
+        </span>
+        <span className="text-[10px] text-koi-600">
+          Shown on the home page
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <Field label="Eyebrow label (small text above title)">
+          <input
+            className="input"
+            value={story.eyebrow}
+            onChange={(e) => onChange({ ...story, eyebrow: e.target.value })}
+            placeholder="Our story"
+          />
+        </Field>
+        <Field label="Image URL (optional)">
+          <input
+            className="input"
+            value={story.imageUrl ?? ""}
+            onChange={(e) => onChange({ ...story, imageUrl: e.target.value })}
+            placeholder="https://…"
+          />
+        </Field>
+        <div className="md:col-span-2">
+          <Field label="Title">
+            <input
+              className="input"
+              value={story.title}
+              onChange={(e) => onChange({ ...story, title: e.target.value })}
+              placeholder="Twelve years of hand-picking koi worth keeping."
+            />
+          </Field>
+        </div>
+        <div className="md:col-span-2">
+          <Field label="Body">
+            <textarea
+              className="input"
+              rows={4}
+              value={story.body}
+              onChange={(e) => onChange({ ...story, body: e.target.value })}
+              placeholder="A short paragraph about your business and approach."
+            />
+          </Field>
+        </div>
+        <div className="md:col-span-2">
+          <Field label="Bullet points (one per line)">
+            <textarea
+              className="input"
+              rows={5}
+              value={bulletsText}
+              onChange={(e) => setBullets(e.target.value)}
+              placeholder={
+                "Direct relationships with Niigata breeders\n21-day quarantine on every koi\nHonest, no-pressure guidance"
+              }
+            />
+          </Field>
+        </div>
+      </div>
+
+      {story.imageUrl && (
+        <div className="mt-4">
+          <div className="text-[10px] uppercase tracking-widest text-koi-600">
+            Image preview
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={story.imageUrl}
+            alt="Story preview"
+            className="mt-1 h-32 w-auto rounded-xl object-cover ring-1 ring-koi-100"
+          />
+        </div>
       )}
     </div>
   );

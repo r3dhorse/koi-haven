@@ -31,6 +31,14 @@ export interface KoiListing {
   updatedAt: string;
 }
 
+export interface SiteStory {
+  eyebrow: string; // small label above the title (e.g. "Our story")
+  title: string;
+  body: string;
+  bullets: string[];
+  imageUrl?: string;
+}
+
 export interface SiteSettings {
   businessName: string;
   tagline: string;
@@ -40,6 +48,7 @@ export interface SiteSettings {
   location: string;
   instagram?: string;
   facebook?: string;
+  story?: SiteStory;
 }
 
 export interface KoiData {

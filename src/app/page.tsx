@@ -205,42 +205,46 @@ function AboutSection({
 }: {
   settings: Awaited<ReturnType<typeof getSettings>>;
 }) {
+  const story = settings.story;
+  if (!story) return null;
   return (
     <section id="about" className="section bg-white">
       <div className="container-page grid items-center gap-12 lg:grid-cols-2">
-        <div className="relative">
-          <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-water-gradient" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://images.unsplash.com/photo-1583212292454-1fe6229603b7?auto=format&fit=crop&w=1400&q=80"
-            alt="Koi pond"
-            className="rounded-[2rem] object-cover shadow-soft"
-          />
-        </div>
-        <div>
-          <span className="pill bg-koi-100 text-koi-700">Our story</span>
+        {story.imageUrl && (
+          <div className="relative">
+            <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-water-gradient" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={story.imageUrl}
+              alt={story.title}
+              className="rounded-[2rem] object-cover shadow-soft"
+            />
+          </div>
+        )}
+        <div className={story.imageUrl ? "" : "lg:col-span-2"}>
+          {story.eyebrow && (
+            <span className="pill bg-koi-100 text-koi-700">
+              {story.eyebrow}
+            </span>
+          )}
           <h2 className="mt-3 font-display text-3xl text-ink sm:text-4xl">
-            Twelve years of hand-picking koi worth keeping.
+            {story.title}
           </h2>
-          <p className="mt-4 text-koi-800/80">
-            {settings.businessName} began in a backyard pond in{" "}
-            {settings.location}. Today we travel to Japan twice a year, work
-            directly with breeders, and only bring back koi we&apos;d be proud
-            to keep ourselves.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm">
-            {[
-              "Direct relationships with Niigata and Hiroshima breeders",
-              "21-day quarantine, salt + heat protocol on every koi",
-              "Detailed top + side photography before sale",
-              "Honest, no-pressure guidance for keepers at any level",
-            ].map((item) => (
-              <li key={item} className="flex gap-3 text-koi-900">
-                <span className="mt-1 h-2 w-2 rounded-full bg-koi-500" />
-                {item}
-              </li>
-            ))}
-          </ul>
+          {story.body && (
+            <p className="mt-4 whitespace-pre-line text-koi-800/80">
+              {story.body}
+            </p>
+          )}
+          {story.bullets.length > 0 && (
+            <ul className="mt-6 space-y-3 text-sm">
+              {story.bullets.map((item) => (
+                <li key={item} className="flex gap-3 text-koi-900">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-koi-500" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </section>
