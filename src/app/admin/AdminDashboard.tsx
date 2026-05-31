@@ -611,30 +611,8 @@ function MediaManager({
   items: KoiMedia[];
   onChange: (items: KoiMedia[]) => void;
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-
-  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.currentTarget.value = "";
-    if (!file) return;
-    setUploading(true);
-    setUploadError("");
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    setUploading(false);
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      setUploadError(j.error ?? "Upload failed.");
-      return;
-    }
-    const j = await res.json();
-    onChange([...items, j.media as KoiMedia]);
-  }
-
   function addExternal() {
-    const raw = prompt("Paste an image or video URL:");
+    const raw = prompt("Paste a Google Drive image or video URL:");
     if (!raw) return;
     const kind = /\.(mp4|mov|webm)$/i.test(raw) ? "video" : "image";
     const url = kind === "image" ? normalizeImageUrl(raw) : raw;
@@ -665,31 +643,14 @@ function MediaManager({
         <span className="text-xs uppercase tracking-widest text-koi-700">
           {label}
         </span>
-        <div className="flex gap-2">
-          <label className="btn-outline cursor-pointer px-3 py-1 text-xs">
-            {uploading ? "Uploading…" : "Upload to Drive"}
-            <input
-              type="file"
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={onPick}
-              disabled={uploading}
-            />
-          </label>
-          <button
-            type="button"
-            onClick={addExternal}
-            className="btn-outline px-3 py-1 text-xs"
-          >
-            Add by URL
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={addExternal}
+          className="btn-outline px-3 py-1 text-xs"
+        >
+          Add by URL
+        </button>
       </div>
-      {uploadError && (
-        <div className="mt-2 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
-          {uploadError}
-        </div>
-      )}
       {items.length === 0 ? (
         <p className="mt-3 text-sm text-koi-700/80">No media yet.</p>
       ) : (
@@ -778,35 +739,10 @@ function HeroImagesEditor({
     images[3] ?? "",
   ];
 
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
-  const [uploadError, setUploadError] = useState("");
-
   function setAt(idx: number, value: string) {
     const next = [...filled];
     next[idx] = normalizeImageUrl(value);
     onChange(next);
-  }
-
-  async function uploadAt(
-    idx: number,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) {
-    const file = e.target.files?.[0];
-    e.currentTarget.value = "";
-    if (!file) return;
-    setUploadingIdx(idx);
-    setUploadError("");
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    setUploadingIdx(null);
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      setUploadError(j.error ?? "Upload failed.");
-      return;
-    }
-    const j = await res.json();
-    setAt(idx, (j.media as KoiMedia).url);
   }
 
   return (
@@ -816,14 +752,9 @@ function HeroImagesEditor({
           Hero collage (4 images)
         </span>
         <span className="text-[10px] text-koi-600">
-          Shown on the home page hero
+          Paste a Google Drive share URL
         </span>
       </div>
-      {uploadError && (
-        <div className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
-          {uploadError}
-        </div>
-      )}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {slots.map((i) => (
           <div
@@ -852,21 +783,11 @@ function HeroImagesEditor({
                 <input
                   className="input"
                   value={filled[i]}
-                  placeholder="https://… or upload below"
+                  placeholder="https://drive.google.com/file/d/…"
                   onChange={(e) => setAt(i, e.target.value)}
                 />
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <label className="btn-outline cursor-pointer px-3 py-1 text-xs">
-                    {uploadingIdx === i ? "Uploading…" : "Upload to Drive"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => uploadAt(i, e)}
-                      disabled={uploadingIdx !== null}
-                    />
-                  </label>
-                  {filled[i] && (
+                {filled[i] && (
+                  <div className="mt-2">
                     <button
                       type="button"
                       onClick={() => setAt(i, "")}
@@ -874,8 +795,8 @@ function HeroImagesEditor({
                     >
                       Clear
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
