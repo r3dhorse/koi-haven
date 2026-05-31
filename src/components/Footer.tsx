@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { SiteSettings } from "@/lib/types";
-import { whatsappLink } from "@/lib/format";
+import { formatWhatsapp } from "@/lib/format";
 
 export function Footer({ settings }: { settings: SiteSettings }) {
+  const wa = formatWhatsapp(settings);
   return (
     <footer className="border-t border-koi-100 bg-white">
       <div className="container-page grid gap-10 py-12 md:grid-cols-4">
@@ -28,7 +29,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           <ul className="mt-3 space-y-2 text-sm text-koi-800/80">
             <li>
               <a href={`tel:${settings.phone}`} className="hover:text-koi-600">
-                {settings.phone}
+                📞 {settings.phone}
               </a>
             </li>
             <li>
@@ -36,22 +37,15 @@ export function Footer({ settings }: { settings: SiteSettings }) {
                 href={`mailto:${settings.email}`}
                 className="hover:text-koi-600"
               >
-                {settings.email}
+                ✉️ {settings.email}
               </a>
             </li>
-            <li>
-              <a
-                href={whatsappLink(
-                  settings,
-                  `Hi ${settings.businessName}, I have a question.`,
-                )}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-emerald-600"
-              >
-                WhatsApp chat
-              </a>
-            </li>
+            {wa && (
+              <li className="text-koi-800/80">
+                💬 WhatsApp:{" "}
+                <span className="font-medium text-koi-900">{wa}</span>
+              </li>
+            )}
           </ul>
         </div>
 

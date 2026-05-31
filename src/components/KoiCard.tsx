@@ -1,22 +1,16 @@
 import Link from "next/link";
 import type { KoiListing, SiteSettings } from "@/lib/types";
-import {
-  formatPrice,
-  inquiryMessage,
-  statusBadge,
-  whatsappLink,
-} from "@/lib/format";
+import { formatPrice, statusBadge } from "@/lib/format";
 
 export function KoiCard({
   koi,
-  settings,
+  settings: _settings,
 }: {
   koi: KoiListing;
   settings: SiteSettings;
 }) {
   const cover = koi.media[0]?.url ?? "";
   const badge = statusBadge(koi.status);
-  const isSold = koi.status === "sold";
 
   return (
     <article className="group card overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-soft">
@@ -74,25 +68,9 @@ export function KoiCard({
           </div>
         </dl>
 
-        <div className="flex items-center gap-2">
-          <Link href={`/koi/${koi.id}`} className="btn-outline flex-1">
-            View details
-          </Link>
-          {!isSold && (
-            <a
-              href={whatsappLink(
-                settings,
-                inquiryMessage(settings, koi.code, koi.name),
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-whatsapp"
-              aria-label={`Inquire about ${koi.name} on WhatsApp`}
-            >
-              Inquire
-            </a>
-          )}
-        </div>
+        <Link href={`/koi/${koi.id}`} className="btn-primary w-full">
+          View details
+        </Link>
       </div>
     </article>
   );

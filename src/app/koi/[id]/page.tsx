@@ -2,12 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaGallery } from "@/components/MediaGallery";
 import { getKoi, getSettings } from "@/lib/store";
-import {
-  formatPrice,
-  inquiryMessage,
-  statusBadge,
-  whatsappLink,
-} from "@/lib/format";
+import { formatPrice, formatWhatsapp, statusBadge } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -90,21 +85,8 @@ export default async function KoiDetailPage({
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              {!isSold && (
-                <a
-                  href={whatsappLink(
-                    settings,
-                    inquiryMessage(settings, koi.code, koi.name),
-                  )}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-whatsapp"
-                >
-                  Inquire about {koi.code} on WhatsApp
-                </a>
-              )}
-              <a href={`tel:${settings.phone}`} className="btn-outline">
-                Call {settings.phone}
+              <a href={`tel:${settings.phone}`} className="btn-primary">
+                📞 Call {settings.phone}
               </a>
               <a
                 href={`mailto:${settings.email}?subject=${encodeURIComponent(
@@ -112,9 +94,21 @@ export default async function KoiDetailPage({
                 )}`}
                 className="btn-outline"
               >
-                Email
+                ✉️ Email about {koi.code}
               </a>
             </div>
+            {!isSold && formatWhatsapp(settings) && (
+              <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200">
+                <div className="font-semibold">
+                  Message us on WhatsApp:{" "}
+                  <span className="font-mono">{formatWhatsapp(settings)}</span>
+                </div>
+                <div className="mt-1 text-emerald-800/90">
+                  Please mention <span className="font-mono">{koi.code}</span>{" "}
+                  – {koi.name} when you message.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

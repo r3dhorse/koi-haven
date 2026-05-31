@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { KoiCard } from "@/components/KoiCard";
 import { getSettings, listKoi } from "@/lib/store";
-import { whatsappLink } from "@/lib/format";
+import { formatWhatsapp } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,12 @@ export default async function HomePage() {
   );
 }
 
-function Hero({ settings }: { settings: { businessName: string; tagline: string; phone: string; whatsapp: string; email: string; location: string } }) {
+function Hero({
+  settings,
+}: {
+  settings: Awaited<ReturnType<typeof getSettings>>;
+}) {
+  const wa = formatWhatsapp(settings);
   return (
     <section className="relative overflow-hidden water-surface">
       <div className="absolute inset-0 -z-0">
@@ -49,18 +54,18 @@ function Hero({ settings }: { settings: { businessName: string; tagline: string;
             <Link href="/koi" className="btn-primary">
               Browse available koi
             </Link>
-            <a
-              href={whatsappLink(
-                settings,
-                `Hi ${settings.businessName}, I'd like to talk koi.`,
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-whatsapp"
-            >
-              Chat on WhatsApp
+            <a href={`tel:${settings.phone}`} className="btn-outline">
+              📞 Call {settings.phone}
             </a>
           </div>
+          {wa && (
+            <p className="mt-3 text-sm text-koi-800/80">
+              Or message us on{" "}
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                WhatsApp {wa}
+              </span>
+            </p>
+          )}
           <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 text-sm">
             <div>
               <dt className="text-koi-700/70">Hand-selected</dt>
@@ -296,6 +301,7 @@ function ContactCta({
 }: {
   settings: Awaited<ReturnType<typeof getSettings>>;
 }) {
+  const wa = formatWhatsapp(settings);
   return (
     <section
       id="contact"
@@ -315,29 +321,24 @@ function ContactCta({
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href={whatsappLink(
-                settings,
-                `Hi ${settings.businessName}, I'd like help picking a koi.`,
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-whatsapp"
-            >
-              WhatsApp us
-            </a>
-            <a
               href={`tel:${settings.phone}`}
               className="btn bg-white text-koi-800 hover:bg-koi-100"
             >
-              Call {settings.phone}
+              📞 Call {settings.phone}
             </a>
             <a
               href={`mailto:${settings.email}`}
               className="btn border border-white/30 text-white hover:bg-white/10"
             >
-              {settings.email}
+              ✉️ {settings.email}
             </a>
           </div>
+          {wa && (
+            <div className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-2xl bg-white/10 px-4 py-2 text-sm ring-1 ring-white/20">
+              <span className="text-koi-100/80">Message us on WhatsApp:</span>
+              <span className="font-semibold text-white">{wa}</span>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-3xl bg-white/10 p-5 ring-1 ring-white/10">

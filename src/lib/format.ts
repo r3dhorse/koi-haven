@@ -31,19 +31,14 @@ export function statusBadge(status: KoiStatus): {
   }
 }
 
-export function whatsappLink(
-  settings: SiteSettings,
-  message: string,
-): string {
-  const text = encodeURIComponent(message);
-  const number = settings.whatsapp.replace(/[^0-9]/g, "");
-  return `https://wa.me/${number}?text=${text}`;
-}
-
-export function inquiryMessage(
-  settings: SiteSettings,
-  koiCode: string,
-  koiName: string,
-): string {
-  return `Hi ${settings.businessName}, I'm interested in ${koiCode} – ${koiName}. Is it still available?`;
+/**
+ * Returns the WhatsApp number formatted for display, e.g. "+1 555 010 0123".
+ * The settings field stores digits only.
+ */
+export function formatWhatsapp(settings: SiteSettings): string {
+  const digits = settings.whatsapp.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  // Group digits into chunks of 3-4 for readability while keeping the leading +.
+  const grouped = digits.replace(/(\d{1,3})(?=(\d{3})+$)/g, "$1 ");
+  return `+${grouped}`;
 }
