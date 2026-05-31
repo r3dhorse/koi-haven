@@ -37,3 +37,9 @@ next-env.d.ts.bak
 # runtime data (seeded on first run from src/lib/store.ts)
 /data
 .env*
+
+# stray screenshots / pasted images
+image.png
+image-*.png
+screenshot*.png
+src/image.png
