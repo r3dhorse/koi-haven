@@ -32,6 +32,25 @@ export function statusBadge(status: KoiStatus): {
 }
 
 /**
+ * If `input` is a Google Drive share/view URL, rewrite it to a direct image
+ * URL that works in `<img src>`. Non-Drive URLs (and already-normalized
+ * googleusercontent URLs) are returned unchanged.
+ */
+export function normalizeImageUrl(input: string): string {
+  const url = input.trim();
+  if (!url) return url;
+  // Already a direct googleusercontent URL — leave alone.
+  if (/^https?:\/\/lh\d+\.googleusercontent\.com\//i.test(url)) return url;
+  if (!/drive\.google\.com/i.test(url)) return url;
+  // Match /file/d/<ID> or ?id=<ID> / &id=<ID>.
+  const match =
+    url.match(/\/file\/d\/([A-Za-z0-9_-]{20,})/) ??
+    url.match(/[?&]id=([A-Za-z0-9_-]{20,})/);
+  if (!match) return url;
+  return `https://lh3.googleusercontent.com/d/${match[1]}=s2000`;
+}
+
+/**
  * Returns the WhatsApp number formatted for display, e.g. "+1 555 010 0123".
  * The settings field stores digits only.
  */

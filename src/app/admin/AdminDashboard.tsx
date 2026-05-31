@@ -11,7 +11,7 @@ import type {
   SiteSettings,
   SiteStory,
 } from "@/lib/types";
-import { formatPrice, statusBadge } from "@/lib/format";
+import { formatPrice, normalizeImageUrl, statusBadge } from "@/lib/format";
 
 const MAX_PROCESS_STEPS = 4;
 
@@ -634,9 +634,10 @@ function MediaManager({
   }
 
   function addExternal() {
-    const url = prompt("Paste an image or video URL:");
-    if (!url) return;
-    const kind = /\.(mp4|mov|webm)$/i.test(url) ? "video" : "image";
+    const raw = prompt("Paste an image or video URL:");
+    if (!raw) return;
+    const kind = /\.(mp4|mov|webm)$/i.test(raw) ? "video" : "image";
+    const url = kind === "image" ? normalizeImageUrl(raw) : raw;
     onChange([...items, { url, kind }]);
   }
 
@@ -782,7 +783,7 @@ function HeroImagesEditor({
 
   function setAt(idx: number, value: string) {
     const next = [...filled];
-    next[idx] = value;
+    next[idx] = normalizeImageUrl(value);
     onChange(next);
   }
 
@@ -925,7 +926,9 @@ function StoryEditor({
           <input
             className="input"
             value={story.imageUrl ?? ""}
-            onChange={(e) => onChange({ ...story, imageUrl: e.target.value })}
+            onChange={(e) =>
+              onChange({ ...story, imageUrl: normalizeImageUrl(e.target.value) })
+            }
             placeholder="https://…"
           />
         </Field>
