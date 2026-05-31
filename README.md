@@ -9,7 +9,8 @@ Built with:
 
 - **Next.js (App Router)** + **TypeScript**
 - **Tailwind CSS** (water-inspired blue/white theme, Inter + Playfair Display)
-- **JSON-based storage** for the MVP (single `data/koi.json` file)
+- **Vercel Blob (private)** for production storage; falls back to a local
+  `data/koi.json` file when `BLOB_READ_WRITE_TOKEN` is not set (great for dev)
 - **Google Drive API** (service account) for hosting koi media
 
 ## Features
@@ -49,9 +50,10 @@ npm start
 
 Then open <http://localhost:3000>.
 
-The first time the app boots, `data/koi.json` is created with sample data,
-default settings, and the default admin password `changeme`. Sign in at
-<http://localhost:3000/admin> and change the password from the Settings tab.
+The first time the app boots, the koi store is seeded with sample data (either
+to `data/koi.json` locally, or to Vercel Blob in production). Sign in at
+<http://localhost:3000/admin> with the password from `ADMIN_PASSWORD` (default
+`changeme` in local dev).
 
 ## Environment variables
 
@@ -63,12 +65,14 @@ cp .env.example .env.local
 
 | Variable | Purpose |
 | --- | --- |
+| `ADMIN_PASSWORD`            | Password for `/admin`. Default `changeme` in local dev. **Set this in production.** |
+| `BLOB_READ_WRITE_TOKEN`     | Auto-injected by Vercel once a Blob store is linked to the project. Required for persistence in production. |
 | `GOOGLE_DRIVE_CLIENT_EMAIL` | Service account email |
 | `GOOGLE_DRIVE_PRIVATE_KEY`  | Service account private key (with `\n` escapes) |
 | `GOOGLE_DRIVE_FOLDER_ID`    | Drive folder ID that the service account can write to |
 
-If these are not set, the storefront still works (with external image URLs),
-but the admin "Upload to Drive" button will return a friendly 503.
+If Drive env vars are not set, the storefront still works (with external image
+URLs), but the admin "Upload to Drive" button will return a friendly 503.
 
 ## Google Drive setup (one time)
 
@@ -103,17 +107,21 @@ or `https://drive.google.com/file/d/<fileId>/preview` (videos).
    For the private key, paste with `\n` as literal `\n` (Vercel preserves it).
 5. **Deploy**.
 
-> ⚠️ **Persistence note.** On Vercel, the filesystem is ephemeral, so the
-> `data/koi.json` file resets to the seed on each deploy. For production, swap
-> `src/lib/store.ts` to use a hosted database
-> (Neon, Upstash, Vercel Blob + JSON, etc.). The interfaces in
-> `src/lib/store.ts` are intentionally tiny — only `readData` / `writeData`
-> need to change. For most koi businesses with a single seller, deploying once
-> and editing through `/admin` works fine because Vercel rebuilds preserve the
-> committed `data/koi.json`. Commit changes you want to keep.
+**Persistence.** When `BLOB_READ_WRITE_TOKEN` is present (auto-set by Vercel
+once a Blob store is linked) the store reads and writes a single JSON object
+at the path `koi-haven/data.json` in a **private** Vercel Blob store. Edits
+made through the admin UI survive deploys. Locally, with no token, the store
+falls back to `data/koi.json` on disk.
 
-For a no-rebuild alternative, host `data/koi.json` in a private GitHub Gist
-or in Vercel Blob and read/write it from the same store interface.
+To provision the blob store (one time):
+
+```bash
+vercel link                      # if not already linked
+vercel blob create-store koi-haven-data --access private
+# answer "yes" when prompted to link to the project for all environments
+```
+
+`BLOB_READ_WRITE_TOKEN` is then injected automatically on every deploy.
 
 ## Project structure
 

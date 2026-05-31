@@ -10,6 +10,9 @@ import type {
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "koi.json");
 
+// Stable pathname inside the linked Vercel Blob store.
+const BLOB_PATH = "koi-haven/data.json";
+
 const defaultSettings: SiteSettings = {
   businessName: "Koi Haven",
   tagline: "Premium Japanese koi from trusted breeders.",
@@ -19,7 +22,6 @@ const defaultSettings: SiteSettings = {
   location: "Pacific Northwest, USA",
   instagram: "koihaven",
   facebook: "koihaven",
-  adminPassword: "changeme",
 };
 
 const seedKoi: KoiListing[] = [
@@ -193,24 +195,118 @@ const defaultData: KoiData = {
   koi: seedKoi,
 };
 
-async function ensureFile(): Promise<void> {
+/* ------------------------------------------------------------------ */
+/* Storage backends                                                    */
+/* ------------------------------------------------------------------ */
+
+function useBlob(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+/** In-process cache for the duration of a single request. */
+let memoryCache: { data: KoiData; mtime: number } | null = null;
+const MEMORY_TTL_MS = 5_000;
+
+async function readFromFile(): Promise<KoiData> {
   try {
     await fs.access(DATA_FILE);
   } catch {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(DATA_FILE, JSON.stringify(defaultData, null, 2), "utf8");
   }
-}
-
-export async function readData(): Promise<KoiData> {
-  await ensureFile();
   const raw = await fs.readFile(DATA_FILE, "utf8");
   return JSON.parse(raw) as KoiData;
 }
 
-export async function writeData(data: KoiData): Promise<void> {
-  await ensureFile();
+async function writeToFile(data: KoiData): Promise<void> {
+  await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
+}
+
+async function readFromBlob(): Promise<KoiData> {
+  const { get, put } = await import("@vercel/blob");
+  try {
+    const result = await get(BLOB_PATH, {
+      access: "private",
+      useCache: false,
+    });
+    if (!result) {
+      await put(BLOB_PATH, JSON.stringify(defaultData, null, 2), {
+        access: "private",
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+      return defaultData;
+    }
+    const text = await streamToString(result.stream);
+    return JSON.parse(text) as KoiData;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes("BlobNotFound") ||
+      message.includes("not found") ||
+      message.includes("404")
+    ) {
+      await put(BLOB_PATH, JSON.stringify(defaultData, null, 2), {
+        access: "private",
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+      return defaultData;
+    }
+    throw err;
+  }
+}
+
+async function writeToBlob(data: KoiData): Promise<void> {
+  const { put } = await import("@vercel/blob");
+  await put(BLOB_PATH, JSON.stringify(data, null, 2), {
+    access: "private",
+    contentType: "application/json",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+  });
+}
+
+async function streamToString(
+  stream: ReadableStream<Uint8Array> | null,
+): Promise<string> {
+  if (!stream) return "";
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let out = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    if (value) out += decoder.decode(value, { stream: true });
+  }
+  out += decoder.decode();
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* Public API                                                          */
+/* ------------------------------------------------------------------ */
+
+export async function readData(): Promise<KoiData> {
+  const now = Date.now();
+  if (memoryCache && now - memoryCache.mtime < MEMORY_TTL_MS) {
+    return memoryCache.data;
+  }
+  const data = useBlob() ? await readFromBlob() : await readFromFile();
+  memoryCache = { data, mtime: now };
+  return data;
+}
+
+export async function writeData(data: KoiData): Promise<void> {
+  if (useBlob()) {
+    await writeToBlob(data);
+  } else {
+    await writeToFile(data);
+  }
+  memoryCache = { data, mtime: Date.now() };
 }
 
 export async function getSettings(): Promise<SiteSettings> {

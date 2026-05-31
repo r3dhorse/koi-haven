@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { listKoi, getSettings } from "@/lib/store";
 import { AdminLogin } from "./AdminLogin";
@@ -13,6 +12,5 @@ export default async function AdminPage() {
   }
   const koi = await listKoi();
   const settings = await getSettings();
-  const { adminPassword: _ignored, ...safeSettings } = settings;
-  return <AdminDashboard initialKoi={koi} initialSettings={safeSettings} />;
+  return <AdminDashboard initialKoi={koi} initialSettings={settings} />;
 }

@@ -66,8 +66,9 @@ export function AdminLogin() {
             </button>
           </form>
           <p className="mt-5 text-xs text-koi-700/70">
-            Default password is <code className="font-mono">changeme</code> —
-            change it in settings after first login.
+            Password is the <code className="font-mono">ADMIN_PASSWORD</code>{" "}
+            environment variable (default{" "}
+            <code className="font-mono">changeme</code> in local dev).
           </p>
         </div>
       </div>

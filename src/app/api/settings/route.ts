@@ -4,9 +4,7 @@ import { getSettings, updateSettings } from "@/lib/store";
 
 export async function GET() {
   const settings = await getSettings();
-  // Never leak the password to clients.
-  const { adminPassword: _ignored, ...safe } = settings;
-  return NextResponse.json({ settings: safe });
+  return NextResponse.json({ settings });
 }
 
 export async function PATCH(req: Request) {
@@ -15,6 +13,5 @@ export async function PATCH(req: Request) {
   }
   const body = await req.json();
   const updated = await updateSettings(body);
-  const { adminPassword: _ignored, ...safe } = updated;
-  return NextResponse.json({ settings: safe });
+  return NextResponse.json({ settings: updated });
 }

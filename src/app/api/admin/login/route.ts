@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { setAdminSession, clearAdminSession } from "@/lib/auth";
-import { getSettings } from "@/lib/store";
+import { checkPassword, setAdminSession, clearAdminSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const { password } = (await req.json()) as { password?: string };
-  const settings = await getSettings();
-  if (!password || password !== (settings.adminPassword ?? "changeme")) {
+  if (!password || !checkPassword(password)) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
   await setAdminSession();

@@ -1,12 +1,18 @@
 import { cookies } from "next/headers";
-import { getSettings } from "./store";
 
 const COOKIE = "koi_admin";
 
+/**
+ * The admin password. Set ADMIN_PASSWORD as a Vercel env var in production.
+ * Defaults to "changeme" for local development.
+ */
+function adminPassword(): string {
+  return process.env.ADMIN_PASSWORD || "changeme";
+}
+
 export async function setAdminSession(): Promise<void> {
-  const settings = await getSettings();
   const jar = await cookies();
-  jar.set(COOKIE, settings.adminPassword ?? "ok", {
+  jar.set(COOKIE, adminPassword(), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
@@ -21,9 +27,12 @@ export async function clearAdminSession(): Promise<void> {
 }
 
 export async function isAdmin(): Promise<boolean> {
-  const settings = await getSettings();
   const jar = await cookies();
   const val = jar.get(COOKIE)?.value;
   if (!val) return false;
-  return val === (settings.adminPassword ?? "changeme");
+  return val === adminPassword();
+}
+
+export function checkPassword(input: string): boolean {
+  return input === adminPassword();
 }

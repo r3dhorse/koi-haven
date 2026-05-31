@@ -5,18 +5,16 @@ import { useRouter } from "next/navigation";
 import type { KoiListing, KoiMedia, KoiStatus, SiteSettings } from "@/lib/types";
 import { formatPrice, statusBadge } from "@/lib/format";
 
-type SafeSettings = Omit<SiteSettings, "adminPassword">;
-
 export function AdminDashboard({
   initialKoi,
   initialSettings,
 }: {
   initialKoi: KoiListing[];
-  initialSettings: SafeSettings;
+  initialSettings: SiteSettings;
 }) {
   const router = useRouter();
   const [koi, setKoi] = useState<KoiListing[]>(initialKoi);
-  const [settings, setSettings] = useState<SafeSettings>(initialSettings);
+  const [settings, setSettings] = useState<SiteSettings>(initialSettings);
   const [editing, setEditing] = useState<KoiListing | null>(null);
   const [tab, setTab] = useState<"koi" | "settings">("koi");
 
@@ -204,23 +202,19 @@ function SettingsForm({
   settings,
   onSaved,
 }: {
-  settings: SafeSettings;
-  onSaved: (s: SafeSettings) => void;
+  settings: SiteSettings;
+  onSaved: (s: SiteSettings) => void;
 }) {
-  const [form, setForm] = useState<SafeSettings & { adminPassword?: string }>({
-    ...settings,
-  });
+  const [form, setForm] = useState<SiteSettings>({ ...settings });
   const [status, setStatus] = useState<"" | "saving" | "saved" | "error">("");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setStatus("saving");
-    const body: Record<string, unknown> = { ...form };
-    if (!body.adminPassword) delete body.adminPassword;
     const res = await fetch("/api/settings", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(form),
     });
     if (!res.ok) {
       setStatus("error");
@@ -289,14 +283,10 @@ function SettingsForm({
           onChange={(e) => setForm({ ...form, facebook: e.target.value })}
         />
       </Field>
-      <Field label="New admin password (leave blank to keep)">
-        <input
-          type="password"
-          className="input"
-          value={form.adminPassword ?? ""}
-          onChange={(e) => setForm({ ...form, adminPassword: e.target.value })}
-        />
-      </Field>
+      <div className="md:col-span-2 rounded-2xl bg-koi-50/70 px-4 py-3 text-xs text-koi-800/80 ring-1 ring-koi-100">
+        Admin password is set with the <code className="font-mono">ADMIN_PASSWORD</code> environment variable
+        in Vercel project settings. Update it there and redeploy to rotate it.
+      </div>
       <div className="flex items-end justify-end gap-3 md:col-span-2">
         {status === "saved" && (
           <span className="text-sm text-emerald-700">Saved.</span>

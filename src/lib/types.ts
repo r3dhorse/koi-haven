@@ -40,7 +40,6 @@ export interface SiteSettings {
   location: string;
   instagram?: string;
   facebook?: string;
-  adminPassword?: string;
 }
 
 export interface KoiData {
