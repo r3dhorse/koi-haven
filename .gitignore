@@ -1,0 +1,38 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+build/
+dist/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env*.local
+.env.local
+
+# OS
+.DS_Store
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# vercel
+.vercel
+
+# runtime data (seeded on first run from src/lib/store.ts)
+/data

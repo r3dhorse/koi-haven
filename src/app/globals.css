@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #f7fbff;
+  --color-fg: #0b1b2b;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Subtle animated water surface used on hero */
+.water-surface {
+  background:
+    radial-gradient(
+      1200px 400px at 50% 0%,
+      rgba(255, 255, 255, 0.6),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #e0effa 0%, #bfe0f5 60%, #88c8ec 100%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Wavy bottom divider used between sections */
+.wave-divider {
+  --wave-color: #ffffff;
+  background:
+    radial-gradient(
+        ellipse at 20% 100%,
+        var(--wave-color) 22%,
+        transparent 23%
+      )
+      0 0 / 40px 24px,
+    radial-gradient(ellipse at 70% 100%, var(--wave-color) 22%, transparent 23%)
+      20px 0 / 40px 24px;
+  background-color: transparent;
+  height: 24px;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all;
+  }
+  .btn-primary {
+    @apply btn bg-koi-600 text-white shadow-soft hover:bg-koi-700;
+  }
+  .btn-outline {
+    @apply btn border border-koi-200 bg-white text-koi-700 hover:border-koi-400 hover:text-koi-800;
+  }
+  .btn-whatsapp {
+    @apply btn bg-emerald-500 text-white hover:bg-emerald-600;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+  .card {
+    @apply rounded-3xl bg-white shadow-card ring-1 ring-koi-100;
+  }
+}
