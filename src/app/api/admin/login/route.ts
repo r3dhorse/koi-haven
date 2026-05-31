@@ -3,7 +3,7 @@ import { checkPassword, setAdminSession, clearAdminSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const { password } = (await req.json()) as { password?: string };
-  if (!password || !checkPassword(password)) {
+  if (!password || !(await checkPassword(password))) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
   await setAdminSession();

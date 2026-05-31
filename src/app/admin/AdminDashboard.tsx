@@ -28,6 +28,7 @@ export function AdminDashboard({
   const [settings, setSettings] = useState<SiteSettings>(initialSettings);
   const [editing, setEditing] = useState<KoiListing | null>(null);
   const [tab, setTab] = useState<"koi" | "settings">("koi");
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   async function logout() {
     await fetch("/api/admin/login", { method: "DELETE" });
@@ -85,6 +86,13 @@ export function AdminDashboard({
             >
               {tab === "koi" ? "Site settings" : "Back to koi"}
             </button>
+            <button
+              type="button"
+              onClick={() => setPasswordOpen(true)}
+              className="btn-outline"
+            >
+              Change password
+            </button>
             <button type="button" onClick={logout} className="btn-outline">
               Sign out
             </button>
@@ -127,6 +135,9 @@ export function AdminDashboard({
               await reloadKoi();
             }}
           />
+        )}
+        {passwordOpen && (
+          <ChangePasswordModal onClose={() => setPasswordOpen(false)} />
         )}
       </div>
     </section>
@@ -295,8 +306,10 @@ function SettingsForm({
         />
       </Field>
       <div className="md:col-span-2 rounded-2xl bg-koi-50/70 px-4 py-3 text-xs text-koi-800/80 ring-1 ring-koi-100">
-        Admin password is set with the <code className="font-mono">ADMIN_PASSWORD</code> environment variable
-        in Vercel project settings. Update it there and redeploy to rotate it.
+        Change the admin password using the <strong>Change password</strong>{" "}
+        button at the top of this page. The{" "}
+        <code className="font-mono">ADMIN_PASSWORD</code> env var is only used
+        for first-time bootstrap before a password is set.
       </div>
 
       <div className="md:col-span-2">
@@ -1128,6 +1141,128 @@ function ProcessEditor({
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ChangePasswordModal({ onClose }: { onClose: () => void }) {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [status, setStatus] = useState<"" | "saving" | "saved" | "error">("");
+  const [error, setError] = useState("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (next !== confirm) {
+      setError("New passwords do not match.");
+      setStatus("error");
+      return;
+    }
+    if (next.length < 8) {
+      setError("New password must be at least 8 characters.");
+      setStatus("error");
+      return;
+    }
+    setStatus("saving");
+    const r = await fetch("/api/admin/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: current, newPassword: next }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      setError(j.error ?? "Password change failed.");
+      setStatus("error");
+      return;
+    }
+    setStatus("saved");
+    setCurrent("");
+    setNext("");
+    setConfirm("");
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl text-ink">Change password</h2>
+            <p className="mt-1 text-xs text-koi-700/80">
+              Other signed-in sessions will be signed out.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full px-2 py-1 text-koi-600 hover:bg-koi-50"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <form onSubmit={submit} className="mt-5 grid gap-3">
+          <Field label="Current password">
+            <input
+              type="password"
+              className="input"
+              value={current}
+              autoComplete="current-password"
+              onChange={(e) => setCurrent(e.target.value)}
+              required
+            />
+          </Field>
+          <Field label="New password (min 8 chars)">
+            <input
+              type="password"
+              className="input"
+              value={next}
+              autoComplete="new-password"
+              onChange={(e) => setNext(e.target.value)}
+              required
+            />
+          </Field>
+          <Field label="Confirm new password">
+            <input
+              type="password"
+              className="input"
+              value={confirm}
+              autoComplete="new-password"
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+            />
+          </Field>
+          {error && (
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              {error}
+            </div>
+          )}
+          {status === "saved" && (
+            <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              Password updated.
+            </div>
+          )}
+          <div className="mt-2 flex items-center justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn-outline">
+              Close
+            </button>
+            <button
+              type="submit"
+              disabled={status === "saving"}
+              className="btn-primary disabled:opacity-50"
+            >
+              {status === "saving" ? "Saving…" : "Update password"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

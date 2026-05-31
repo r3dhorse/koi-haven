@@ -74,7 +74,15 @@ export interface SiteSettings {
   process?: SiteProcess;
 }
 
+export interface AdminAuth {
+  /** scrypt hash of the admin password as "<saltHex>:<keyHex>". */
+  passwordHash: string;
+  /** Random opaque session token; null when no one is signed in. */
+  sessionToken: string | null;
+}
+
 export interface KoiData {
   settings: SiteSettings;
   koi: KoiListing[];
+  auth?: AdminAuth;
 }
