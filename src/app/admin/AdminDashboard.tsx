@@ -6,10 +6,14 @@ import type {
   KoiListing,
   KoiMedia,
   KoiStatus,
+  ProcessStep,
+  SiteProcess,
   SiteSettings,
   SiteStory,
 } from "@/lib/types";
 import { formatPrice, statusBadge } from "@/lib/format";
+
+const MAX_PROCESS_STEPS = 4;
 
 export function AdminDashboard({
   initialKoi,
@@ -313,6 +317,20 @@ function SettingsForm({
             }
           }
           onChange={(story) => setForm({ ...form, story })}
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <ProcessEditor
+          proc={
+            form.process ?? {
+              eyebrow: "How it works",
+              title: "",
+              intro: "",
+              steps: [],
+            }
+          }
+          onChange={(process) => setForm({ ...form, process })}
         />
       </div>
       <div className="flex items-end justify-end gap-3 md:col-span-2">
@@ -960,6 +978,166 @@ function StoryEditor({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+function ProcessEditor({
+  proc,
+  onChange,
+}: {
+  proc: SiteProcess;
+  onChange: (p: SiteProcess) => void;
+}) {
+  function updateStep(i: number, patch: Partial<ProcessStep>) {
+    const steps = [...proc.steps];
+    steps[i] = { ...steps[i], ...patch };
+    onChange({ ...proc, steps });
+  }
+
+  function removeStep(i: number) {
+    onChange({ ...proc, steps: proc.steps.filter((_, idx) => idx !== i) });
+  }
+
+  function moveStep(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= proc.steps.length) return;
+    const steps = [...proc.steps];
+    [steps[i], steps[j]] = [steps[j], steps[i]];
+    onChange({ ...proc, steps });
+  }
+
+  function addStep() {
+    if (proc.steps.length >= MAX_PROCESS_STEPS) return;
+    const n = proc.steps.length + 1;
+    onChange({
+      ...proc,
+      steps: [...proc.steps, { title: `${n} · Step ${n}`, body: "" }],
+    });
+  }
+
+  const atMax = proc.steps.length >= MAX_PROCESS_STEPS;
+
+  return (
+    <div className="rounded-2xl border border-koi-100 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-widest text-koi-700">
+          How it works section
+        </span>
+        <span className="text-[10px] text-koi-600">
+          {proc.steps.length} / {MAX_PROCESS_STEPS} steps
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <Field label="Eyebrow label">
+          <input
+            className="input"
+            value={proc.eyebrow}
+            onChange={(e) => onChange({ ...proc, eyebrow: e.target.value })}
+            placeholder="How it works"
+          />
+        </Field>
+        <Field label="Title">
+          <input
+            className="input"
+            value={proc.title}
+            onChange={(e) => onChange({ ...proc, title: e.target.value })}
+            placeholder="From our pond to yours"
+          />
+        </Field>
+        <div className="md:col-span-2">
+          <Field label="Intro (optional)">
+            <textarea
+              className="input"
+              rows={2}
+              value={proc.intro}
+              onChange={(e) => onChange({ ...proc, intro: e.target.value })}
+              placeholder="A simple, honest process — no auctions, no pressure."
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs uppercase tracking-widest text-koi-700">
+            Steps
+          </span>
+          <button
+            type="button"
+            onClick={addStep}
+            disabled={atMax}
+            className="btn-outline px-3 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            + Add step {atMax ? "(max 4)" : ""}
+          </button>
+        </div>
+
+        {proc.steps.length === 0 ? (
+          <p className="mt-3 text-sm text-koi-700/80">
+            No steps yet. Add up to four.
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {proc.steps.map((s, i) => (
+              <li
+                key={i}
+                className="rounded-xl bg-koi-50/40 p-4 ring-1 ring-koi-100"
+              >
+                <div className="grid gap-3 md:grid-cols-[1fr_2fr]">
+                  <Field label={`Step ${i + 1} title`}>
+                    <input
+                      className="input"
+                      value={s.title}
+                      onChange={(e) =>
+                        updateStep(i, { title: e.target.value })
+                      }
+                      placeholder={`${i + 1} · Step name`}
+                    />
+                  </Field>
+                  <Field label="Body">
+                    <textarea
+                      className="input"
+                      rows={2}
+                      value={s.body}
+                      onChange={(e) =>
+                        updateStep(i, { body: e.target.value })
+                      }
+                      placeholder="A sentence or two describing this step."
+                    />
+                  </Field>
+                </div>
+                <div className="mt-2 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveStep(i, -1)}
+                    disabled={i === 0}
+                    className="rounded-full bg-white px-2 py-0.5 text-[10px] text-koi-700 ring-1 ring-koi-100 disabled:opacity-40"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveStep(i, 1)}
+                    disabled={i === proc.steps.length - 1}
+                    className="rounded-full bg-white px-2 py-0.5 text-[10px] text-koi-700 ring-1 ring-koi-100 disabled:opacity-40"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeStep(i)}
+                    className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] text-rose-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

@@ -39,6 +39,19 @@ export interface SiteStory {
   imageUrl?: string;
 }
 
+export interface ProcessStep {
+  title: string;
+  body: string;
+}
+
+export interface SiteProcess {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  /** Steps shown on the home page. UI enforces max 4. */
+  steps: ProcessStep[];
+}
+
 export interface SiteSettings {
   businessName: string;
   tagline: string;
@@ -51,6 +64,7 @@ export interface SiteSettings {
   story?: SiteStory;
   /** Four image URLs shown in the home hero collage. */
   heroImages?: string[];
+  process?: SiteProcess;
 }
 
 export interface KoiData {

@@ -18,7 +18,7 @@ export default async function HomePage() {
       <Stats />
       <FeaturedSection koi={fallback} settings={settings} />
       <AboutSection settings={settings} />
-      <ProcessSection />
+      <ProcessSection settings={settings} />
       <ContactCta settings={settings} />
     </>
   );
@@ -256,38 +256,48 @@ function AboutSection({
   );
 }
 
-function ProcessSection() {
-  const steps = [
-    {
-      title: "1 · Discover",
-      body: "Browse the gallery or tell us what variety, size, and budget you have in mind.",
-    },
-    {
-      title: "2 · Reserve",
-      body: "Reserve any koi with a deposit. We hold it in quarantine until you're ready.",
-    },
-    {
-      title: "3 · Deliver",
-      body: "Insured local delivery, or carefully boxed overnight shipping nationwide.",
-    },
-  ];
+function ProcessSection({
+  settings,
+}: {
+  settings: Awaited<ReturnType<typeof getSettings>>;
+}) {
+  const proc = settings.process;
+  if (!proc || proc.steps.length === 0) return null;
+  const cols =
+    proc.steps.length >= 4
+      ? "md:grid-cols-2 lg:grid-cols-4"
+      : proc.steps.length === 3
+        ? "md:grid-cols-3"
+        : proc.steps.length === 2
+          ? "md:grid-cols-2"
+          : "md:grid-cols-1";
   return (
     <section className="section bg-koi-50/40">
       <div className="container-page">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="pill bg-koi-100 text-koi-700">How it works</span>
-          <h2 className="mt-3 font-display text-3xl text-ink sm:text-4xl">
-            From our pond to yours
-          </h2>
-          <p className="mt-2 text-koi-800/80">
-            A simple, honest process — no auctions, no pressure.
-          </p>
+          {proc.eyebrow && (
+            <span className="pill bg-koi-100 text-koi-700">{proc.eyebrow}</span>
+          )}
+          {proc.title && (
+            <h2 className="mt-3 font-display text-3xl text-ink sm:text-4xl">
+              {proc.title}
+            </h2>
+          )}
+          {proc.intro && (
+            <p className="mt-2 whitespace-pre-line text-koi-800/80">
+              {proc.intro}
+            </p>
+          )}
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {steps.map((s) => (
-            <div key={s.title} className="card p-6">
-              <div className="font-display text-xl text-koi-700">{s.title}</div>
-              <p className="mt-2 text-sm text-koi-800/80">{s.body}</p>
+        <div className={`mt-10 grid gap-6 ${cols}`}>
+          {proc.steps.map((s, i) => (
+            <div key={`${s.title}-${i}`} className="card p-6">
+              <div className="font-display text-xl text-koi-700">
+                {s.title}
+              </div>
+              <p className="mt-2 whitespace-pre-line text-sm text-koi-800/80">
+                {s.body}
+              </p>
             </div>
           ))}
         </div>

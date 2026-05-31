@@ -4,9 +4,12 @@ import type {
   KoiData,
   KoiListing,
   KoiStatus,
+  SiteProcess,
   SiteSettings,
   SiteStory,
 } from "./types";
+
+export const MAX_PROCESS_STEPS = 4;
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "koi.json");
@@ -20,6 +23,26 @@ export const defaultHeroImages: string[] = [
   "https://images.unsplash.com/photo-1545816250-e12bedba42ba?auto=format&fit=crop&w=900&q=80",
   "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1400&q=80",
 ];
+
+export const defaultProcess: SiteProcess = {
+  eyebrow: "How it works",
+  title: "From our pond to yours",
+  intro: "A simple, honest process — no auctions, no pressure.",
+  steps: [
+    {
+      title: "1 · Discover",
+      body: "Browse the gallery or tell us what variety, size, and budget you have in mind.",
+    },
+    {
+      title: "2 · Reserve",
+      body: "Reserve any koi with a deposit. We hold it in quarantine until you're ready.",
+    },
+    {
+      title: "3 · Deliver",
+      body: "Insured local delivery, or carefully boxed overnight shipping nationwide.",
+    },
+  ],
+};
 
 export const defaultStory: SiteStory = {
   eyebrow: "Our story",
@@ -46,6 +69,7 @@ const defaultSettings: SiteSettings = {
   facebook: "koihaven",
   story: defaultStory,
   heroImages: defaultHeroImages,
+  process: defaultProcess,
 };
 
 const seedKoi: KoiListing[] = [
@@ -344,6 +368,18 @@ export async function getSettings(): Promise<SiteSettings> {
     data.settings.heroImages.length === 0
   ) {
     data.settings = { ...data.settings, heroImages: defaultHeroImages };
+  }
+  if (!data.settings.process) {
+    data.settings = { ...data.settings, process: defaultProcess };
+  } else {
+    // Defensive: clamp steps to MAX_PROCESS_STEPS in case stored data drifts.
+    data.settings = {
+      ...data.settings,
+      process: {
+        ...data.settings.process,
+        steps: data.settings.process.steps.slice(0, MAX_PROCESS_STEPS),
+      },
+    };
   }
   return data.settings;
 }
