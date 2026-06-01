@@ -120,15 +120,6 @@ function Hero({
               sizes="(max-width: 1024px) 60vw, 32vw"
             />
           </div>
-          <div className="pointer-events-none absolute -bottom-6 -right-2 hidden animate-float rounded-2xl bg-white/90 p-3 shadow-card lg:block">
-            <div className="text-[10px] uppercase tracking-widest text-koi-600">
-              Live status
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-ink">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              New koi every week
-            </div>
-          </div>
         </div>
       </div>
     </section>
