@@ -1002,9 +1002,13 @@ function StoryEditor({
   story: SiteStory;
   onChange: (s: SiteStory) => void;
 }) {
-  const bulletsText = story.bullets.join("\n");
+  // Keep the raw textarea text in local state so newlines (and the empty line
+  // you type before a new bullet) survive editing. Splitting/filtering happens
+  // only when propagating to the parent, never on the displayed value.
+  const [bulletsText, setBulletsText] = useState(story.bullets.join("\n"));
 
   function setBullets(raw: string) {
+    setBulletsText(raw);
     const bullets = raw
       .split("\n")
       .map((s) => s.trim())
