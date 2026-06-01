@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export function AdminLogin() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -18,12 +16,15 @@ export function AdminLogin() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password }),
     });
-    setPending(false);
     if (!res.ok) {
+      setPending(false);
       setError("Invalid password.");
       return;
     }
-    router.refresh();
+    // Force a full reload so the server re-evaluates the admin session with the
+    // freshly set cookie and renders the dashboard. A soft router.refresh() can
+    // race the new cookie and leave the user stuck on the login screen.
+    window.location.assign("/admin");
   }
 
   return (
